@@ -1,114 +1,221 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br />
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener"
-        >vue-cli documentation</a
-      >.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel"
-          target="_blank"
-          rel="noopener"
-          >babel</a
+  <div>
+    <table>
+      <tr v-for="(rowSeats, rowIndex) in seats" :key="`row-${rowIndex}`">
+        <draggable
+          v-model="seats"
+          draggable=".seat"
+          group="a"
+          :move="handleMove"
+          @end="handleDragEnd"
         >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint"
-          target="_blank"
-          rel="noopener"
-          >eslint</a
-        >
-      </li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li>
-        <a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a>
-      </li>
-      <li>
-        <a href="https://forum.vuejs.org" target="_blank" rel="noopener"
-          >Forum</a
-        >
-      </li>
-      <li>
-        <a href="https://chat.vuejs.org" target="_blank" rel="noopener"
-          >Community Chat</a
-        >
-      </li>
-      <li>
-        <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-          >Twitter</a
-        >
-      </li>
-      <li>
-        <a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a>
-      </li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li>
-        <a href="https://router.vuejs.org" target="_blank" rel="noopener"
-          >vue-router</a
-        >
-      </li>
-      <li>
-        <a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a>
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/vue-devtools#vue-devtools"
-          target="_blank"
-          rel="noopener"
-          >vue-devtools</a
-        >
-      </li>
-      <li>
-        <a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener"
-          >vue-loader</a
-        >
-      </li>
-      <li>
-        <a
-          href="https://github.com/vuejs/awesome-vue"
-          target="_blank"
-          rel="noopener"
-          >awesome-vue</a
-        >
-      </li>
-    </ul>
+          <td
+            v-for="(seat, columnIndex) in rowSeats"
+            :key="`${rowIndex}-${columnIndex}`"
+            class="seat pa-5"
+            :id="`${rowIndex}-${columnIndex}`"
+            align="center"
+            valign="middle"
+            @dblclick="
+              editSeatId({
+                id: seat.id,
+                location: [rowIndex, columnIndex],
+                isEmpty: seat.isEmpty
+              })
+            "
+          >
+            <div
+              v-if="seat.isTwoChair"
+              class="d-flex flex-column fill-height justify-space-around two-chair"
+            >
+              <div
+                style="height:50%; width: 100%"
+                class="d-flex align-center justify-center"
+                :class="[seat.isEmpty[0] ? 'is-empty' : 'is-not-empty']"
+              >
+                {{ seat.id + "（左）" }}
+              </div>
+              <hr />
+              <div
+                style="height:50%; width: 100%"
+                class="d-flex align-center justify-center"
+                :class="[seat.isEmpty[1] ? 'is-empty' : 'is-not-empty']"
+              >
+                {{ seat.id + "（右）" }}
+              </div>
+            </div>
+
+            <div
+              v-if="!seat.isTwoChair"
+              :class="[
+                seat.isEmpty[0] ? 'is-empty' : 'is-not-empty',
+                'd-flex justify-center align-center one-chair'
+              ]"
+            >
+              {{ seat.id }}
+            </div>
+          </td>
+        </draggable>
+      </tr>
+    </table>
+
+    <span @click="addRow">add row</span>
+    <span @click="removeRow">remove row</span>
+    <span @click="addColumn">add column</span>
+    <span @click="removeColumn">remove column</span>
+
+    <editSeatDialog :seat="editSeat" :dialog="dialog" />
   </div>
 </template>
 
 <script>
+import draggable from "vuedraggable";
+import editSeatDialog from "@/components/EditSeatDialog";
+
+import EventBus from "@/plugins/event-bus";
+
 export default {
-  name: "HelloWorld",
-  props: {
-    msg: String
+  components: {
+    draggable,
+    editSeatDialog
+  },
+  data() {
+    return {
+      editSeat: {},
+      dialog: false,
+      rowCount: 2,
+      columnCount: 2,
+      dragElement: null,
+      dropElement: null,
+      seats: [
+        [
+          {
+            id: "a0001",
+            isEmpty: [true, false],
+            isTwoChair: true
+          },
+          {
+            id: "a0001",
+            isEmpty: [true],
+            isTwoChair: false
+          }
+        ],
+        [
+          {
+            id: "a0002",
+            isEmpty: [false],
+            isTwoChair: false
+          },
+          {
+            id: "a0001",
+            isEmpty: [true, true],
+            isTwoChair: true
+          }
+        ]
+      ]
+    };
+  },
+  mounted() {
+    EventBus.$on("updateId", newSeat => {
+      let location = newSeat.location;
+
+      delete newSeat.location;
+      this.seats[location[0]][location[1]] = newSeat;
+      this.dialog = false;
+    });
+  },
+  methods: {
+    handleDragEnd() {
+      let dragRowIndex = this.dragElement[0];
+      let dragColumnIndex = this.dragElement[1];
+
+      let dropRowIndex = this.dropElement[0];
+      let dropColumnIndex = this.dropElement[1];
+
+      let seats = Object.assign([], this.seats);
+      let temp = seats[dragRowIndex][dragColumnIndex];
+
+      seats[dragRowIndex][dragColumnIndex] = seats[dropRowIndex][dropColumnIndex];
+      seats[dropRowIndex][dropColumnIndex] = temp;
+
+      this.seats = seats;
+    },
+    handleMove({ dragged, related }) {
+      let relatedElement = dragged.id;
+      let draggedElement = related.id;
+
+      if (relatedElement != undefined && draggedElement != undefined) {
+        this.dropElement = relatedElement.split("-");
+        this.dragElement = draggedElement.split("-");
+      }
+      return false;
+    },
+    addRow() {
+      this.rowCount++;
+
+      let rowSeats = [];
+      for (let columnIndex = 0; columnIndex < this.columnCount; columnIndex++) {
+        rowSeats.push({
+          id: "",
+          isEmpty: false
+        });
+      }
+
+      this.seats.push(rowSeats);
+    },
+    removeRow() {
+      if (this.rowCount - 1 >= 1) {
+        this.rowCount--;
+        this.seats.pop();
+      }
+    },
+    addColumn() {
+      this.columnCount++;
+
+      let seats = this.seats;
+      for (let rowIndex = 0; rowIndex < this.rowCount; rowIndex++) {
+        seats[rowIndex].push({
+          id: "",
+          isEmpty: false
+        });
+      }
+    },
+    removeColumn() {
+      if (this.columnCount - 1 >= 1) {
+        this.columnCount--;
+        let seats = this.seats;
+        for (let rowIndex = 0; rowIndex < this.rowCount; rowIndex++) {
+          seats[rowIndex].pop();
+        }
+      }
+    },
+    editSeatId(seat) {
+      this.editSeat = seat;
+      this.dialog = true;
+    }
   }
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+.seat {
+  /* border: black solid 2px; */
+  width: 260px;
+  height: 260px;
+  color: white;
+  font-size: 1.2em;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+.is-empty {
+  background-color: #4caf50;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+
+.is-not-empty {
+  background-color: #ff5252;
 }
-a {
-  color: #42b983;
+
+.one-chair {
+  height: 50% !important;
+  width: 100% !important;
 }
 </style>
