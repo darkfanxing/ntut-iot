@@ -1,11 +1,14 @@
 <template>
   <div class="pt-5 d-flex flex-column justify-space-around fill-height">
-    <ActionButton class="my-5" :seats="seats" />
+    <ActionButton class="my-5" :seats="seatsLocation" />
     <div class="scroll" style="max-height: 70vh;">
       <table>
-        <tr v-for="(rowSeats, rowIndex) in seats" :key="`row-${rowIndex}`">
+        <tr
+          v-for="(rowSeats, rowIndex) in seatsLocation"
+          :key="`row-${rowIndex}`"
+        >
           <draggable
-            v-model="seats"
+            v-model="seatsLocation"
             draggable=".seat"
             group="a"
             :move="handleMove"
@@ -20,23 +23,21 @@
               align="center"
               valign="middle"
               @dblclick="
-                editSeatId({
+                editSeatInfo({
                   id: seat.id,
-                  location: [rowIndex, columnIndex],
-                  isEmpty: seat.isEmpty,
-                  chairType: seat.chairType
+                  location: [rowIndex, columnIndex]
                 })
               "
             >
               <div
-                v-if="seat.chairType == 'type-two'"
+                v-if="seatsInfo[seat.id]['chairType'] == 'type-two'"
                 class="d-flex flex-column fill-height justify-space-around"
               >
                 <div
                   v-for="index in 2"
                   :key="`type-tow-${index}`"
                   :class="[
-                    seatsIsEmpty[seat.id][index - 1]
+                    seatsInfo[seat.id]['is-empty'][index - 1]
                       ? 'is-empty'
                       : 'is-not-empty',
                     index == 1 ? 'round-top' : 'round-bottom',
@@ -48,9 +49,11 @@
               </div>
 
               <div
-                v-else-if="seat.chairType == 'type-one'"
+                v-else
                 :class="[
-                  seatsIsEmpty[seat.id][0] ? 'is-empty' : 'is-not-empty',
+                  seatsInfo[seat.id]['is-empty'][0]
+                    ? 'is-empty'
+                    : 'is-not-empty',
                   'd-flex justify-center align-center type-one round',
                   seat.id == 'None' ? 'no-id' : ''
                 ]"
@@ -63,14 +66,14 @@
         </tr>
       </table>
 
-      <editSeatInfo :seat="editSeat" :dialog="dialog" />
+      <EditSeatInfo :seat="editSeat" :dialog="dialog" :seatsInfo="seatsInfo" />
     </div>
   </div>
 </template>
 
 <script>
 import draggable from "vuedraggable";
-import editSeatInfo from "@/components/EditSeatInfo";
+import EditSeatInfo from "@/components/EditSeatInfo";
 import ActionButton from "@/components/ActionButton";
 
 import { frdb } from "@/plugins/db";
@@ -80,7 +83,7 @@ import EventBus from "@/plugins/event-bus";
 export default {
   components: {
     draggable,
-    editSeatInfo,
+    EditSeatInfo,
     ActionButton
   },
   data() {
@@ -89,21 +92,30 @@ export default {
       dialog: false,
       dragElement: null,
       dropElement: null,
-      seatsIsEmpty: [],
-      seats: []
+      seatsInfo: {},
+      seatsLocation: []
     };
   },
+  watch: {
+    // seatsLocation () {
+    //   rtdb.ref("/seats").set(this.seatsLocation);
+    // }
+  },
   mounted() {
+    EventBus.$on("closeEditSeatInfoDialog", () => {
+      this.dialog = false;
+    });
+
     EventBus.$on("updateSeatInfo", newSeat => {
       let location = newSeat.location;
 
       delete newSeat.location;
-      this.seats[location[0]][location[1]] = newSeat;
+      this.seatsLocation[location[0]][location[1]] = newSeat;
       this.dialog = false;
     });
 
     EventBus.$on("changeSeatTable", newSeat => {
-      this.seats = newSeat;
+      this.seatsLocation = newSeat;
     });
   },
   methods: {
@@ -114,7 +126,7 @@ export default {
       let dropRowIndex = this.dropElement[0];
       let dropColumnIndex = this.dropElement[1];
 
-      let seats = Object.assign([], this.seats);
+      let seats = Object.assign([], this.seatsLocation);
       let temp = seats[dragRowIndex][dragColumnIndex];
 
       seats[dragRowIndex][dragColumnIndex] =
@@ -122,7 +134,7 @@ export default {
 
       seats[dropRowIndex][dropColumnIndex] = temp;
 
-      this.seats = seats;
+      rtdb.ref("/seats").set(seats);
     },
     handleMove({ dragged, related }) {
       let relatedElement = dragged.id;
@@ -134,16 +146,16 @@ export default {
       }
       return false;
     },
-    editSeatId(seat) {
+    editSeatInfo(seat) {
       this.editSeat = seat;
       this.dialog = true;
     }
   },
   firestore: {
-    seatsIsEmpty: frdb.collection("seat-situation").doc("is-empty")
+    seatsInfo: frdb.collection("seat-situation").doc("seat-info")
   },
   firebase: {
-    seats: rtdb.ref("/seats")
+    seatsLocation: rtdb.ref("/seats")
   }
 };
 </script>

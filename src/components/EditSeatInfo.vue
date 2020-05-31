@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" persistent max-width="290">
+  <v-dialog v-model="dialog" max-width="290">
     <v-card>
       <v-card-title class="headline">Change Seat Info.</v-card-title>
 
@@ -9,20 +9,17 @@
           label="Seat ID"
           v-model="seat.id"
           hide-details="auto"
+          :error="error"
+          :rules="[checkId || '找不到座位 ID']"
+          @keyup.enter="updateSeatInfo"
         ></v-text-field>
-
-        <v-select
-          v-model="seat.chairType"
-          class="mt-5"
-          :items="chairTypes"
-          label="Chair Type"
-          outlined
-        ></v-select>
       </v-card-text>
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="green darken-1" text @click="dialog = false">取消</v-btn>
+        <v-btn color="green darken-1" text @click="closeEditSeatInfoDialog">
+          取消
+        </v-btn>
         <v-btn color="green darken-1" text @click="updateSeatInfo">儲存</v-btn>
       </v-card-actions>
     </v-card>
@@ -30,21 +27,59 @@
 </template>
 
 <script>
+import { rtdb } from "@/plugins/db";
 import EventBus from "@/plugins/event-bus";
 
 export default {
   data() {
     return {
-      chairTypes: ["type-one", "type-two"]
+      chairTypes: ["type-one", "type-two"],
+      error: false
     };
   },
   props: {
     seat: Object,
-    dialog: Boolean
+    dialog: Boolean,
+    seatsInfo: Object
+  },
+  computed: {
+    checkId() {
+      return this.seatsInfo[this.seat.id] != undefined;
+    }
+  },
+  mounted() {
+    if (this.dialog) {
+      document.addEventListener(
+        "keydown",
+        e => {
+          if (e.keyCode == 27) {
+            this.closeEditSeatInfoDialog();
+          }
+        },
+        {
+          once: true
+        }
+      );
+    }
   },
   methods: {
+    closeEditSeatInfoDialog() {
+      EventBus.$emit("closeEditSeatInfoDialog");
+    },
     updateSeatInfo() {
-      EventBus.$emit("updateSeatInfo", this.seat);
+      let rowIndex = this.seat.location[0];
+      let columnIndex = this.seat.location[1];
+
+      if (this.checkId) {
+        rtdb.ref(`seats/${rowIndex}/${columnIndex}`).update({
+          id: this.seat.id
+        });
+
+        this.error = false;
+        this.closeEditSeatInfoDialog();
+      } else {
+        this.error = true;
+      }
     }
   }
 };

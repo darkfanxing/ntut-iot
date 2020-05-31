@@ -73,24 +73,22 @@ export default {
         columnIndex++
       ) {
         rowSeats.push({
-          id: "None",
-          chairType: "type-one"
+          id: "None"
         });
       }
-      rtdb.ref("/seats/" + this.seats.length).set(rowSeats);
+      rtdb.ref(`/seats/${this.seats.length}`).set(rowSeats);
     },
     removeRow() {
       let seatLength = this.seats.length - 1;
       if (this.seats.length - 1 >= 1) {
-        rtdb.ref("/seats/" + seatLength).remove();
+        rtdb.ref(`/seats/${seatLength}`).remove();
       }
     },
     addColumn() {
       let seats = this.seats;
       for (let rowIndex = 0; rowIndex < this.seats.length; rowIndex++) {
         seats[rowIndex].push({
-          id: "None",
-          chairType: "type-one"
+          id: "None"
         });
       }
 
