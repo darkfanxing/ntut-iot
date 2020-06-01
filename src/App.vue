@@ -1,10 +1,10 @@
 <template>
   <v-app id="app" class="min-width-420">
-    <v-app-bar app color="primary" class="min-width-420" dark>
+    <v-app-bar absolute color="primary" class="min-width-420" dark fixed>
       <v-icon size="32">mdi-alpha-i</v-icon>
       <v-icon size="32">mdi-alpha-o</v-icon>
       <v-icon size="32">mdi-alpha-t</v-icon>
-      <h2>座位即時回報系統</h2>
+      <h3>座位即時回報系統</h3>
       <v-spacer></v-spacer>
       <div class="hidden-sm-and-down">
         <v-icon
@@ -27,8 +27,14 @@
     <v-content>
       <component :is="componentId"></component>
     </v-content>
-
-    <v-navigation-drawer v-model="drawer" absolute right temporary>
+    <v-navigation-drawer
+      v-model="drawer"
+      absolute
+      right
+      temporary
+      :width="navigationWidth"
+      style="z-index: 999999;"
+    >
       <v-list nav dense>
         <v-list-item-group
           v-model="selectTitle"
@@ -63,12 +69,20 @@ export default {
   watch: {
     selectTitle() {
       this.drawer = false;
+    },
+    drawer() {
+      if (this.drawer) {
+        this.navigationWidth = 260;
+      } else {
+        this.navigationWidth = 0;
+      }
     }
   },
   data() {
     return {
       componentId: "SeatTable",
       drawer: false,
+      navigationWidth: 0,
       selectTitle: null,
       titles: [
         {
@@ -102,6 +116,6 @@ export default {
 }
 
 .min-width-420 {
-  min-width: 420px;
+  min-width: 300px;
 }
 </style>

@@ -3,7 +3,7 @@
     <VueApexChart
       type="radialBar"
       height="350"
-      width="500"
+      style="max-width: 100vw;"
       :options="chartOptions"
       :series="series"
     ></VueApexChart>

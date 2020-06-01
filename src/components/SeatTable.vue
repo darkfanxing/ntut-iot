@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-5 d-flex flex-column justify-space-around fill-height">
+  <div class="d-flex flex-column justify-space-around fill-height">
     <ActionButton class="my-5" :seats="seatsLocation" />
     <div class="scroll" style="max-height: 70vh;">
       <table>
@@ -165,10 +165,10 @@ export default {
 
 .seat {
   /* border: black solid 2px; */
-  width: 260px;
-  height: 260px;
-  min-height: 260px;
-  min-width: 260px;
+  width: 100px;
+  height: 200px;
+  min-height: 100px;
+  min-width: 200px;
   color: white;
   font-size: 1.2em;
 }
