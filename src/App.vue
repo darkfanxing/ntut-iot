@@ -1,6 +1,6 @@
 <template>
   <v-app id="app" class="min-width-420">
-    <v-app-bar absolute color="primary" class="min-width-420" dark fixed>
+    <v-app-bar color="primary" class="min-width-420" dark app>
       <v-icon size="32">mdi-alpha-i</v-icon>
       <v-icon size="32">mdi-alpha-o</v-icon>
       <v-icon size="32">mdi-alpha-t</v-icon>
@@ -46,7 +46,11 @@
             class="my-3"
             @click="changePage(title.name)"
           >
-            <v-icon size="36" class="mr-5" :color="title.color">
+            <v-icon
+              size="36"
+              class="mr-5"
+              :color="title.color == 'white' ? 'black' : title.color"
+            >
               {{ title.icon }}
             </v-icon>
             <span class="title">{{ title.name }}</span>
@@ -88,7 +92,7 @@ export default {
         {
           icon: "mdi-home",
           name: "Home",
-          color: "#00e5ff"
+          color: "white"
         },
         {
           icon: "mdi-chart-bar",

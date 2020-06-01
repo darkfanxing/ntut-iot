@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-column justify-space-around fill-height">
     <ActionButton class="my-5" :seats="seatsLocation" />
-    <div class="scroll" style="max-height: 70vh;">
+    <div class="scroll" style="max-height: 60vh;">
       <table>
         <tr
           v-for="(rowSeats, rowIndex) in seatsLocation"

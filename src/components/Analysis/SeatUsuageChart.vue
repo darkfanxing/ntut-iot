@@ -3,7 +3,6 @@
     <VueApexChart
       type="area"
       height="350"
-      width="300"
       :options="chartOptions"
       :series="series"
     ></VueApexChart>

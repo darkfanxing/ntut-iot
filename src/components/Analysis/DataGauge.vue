@@ -20,6 +20,7 @@ export default {
       chartOptions: {
         chart: {
           height: 350,
+          width: 300,
           type: "radialBar",
           offsetY: -10
         },
