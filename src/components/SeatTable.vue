@@ -30,7 +30,7 @@
               "
             >
               <div
-                v-if="seatsInfo[seat.id]['chairType'] == 'type-two'"
+                v-if="seatsInfo[seat.id]['chair-type'] == 'type-two'"
                 class="d-flex flex-column fill-height justify-space-around"
               >
                 <div
@@ -44,7 +44,7 @@
                     'd-flex flex-column align-center justify-center type-one'
                   ]"
                 >
-                  {{ index }}{{ seat.id }}{{ index == 1 ? "（左）" : "（右）" }}
+                  {{ seat.id }}{{ index == 1 ? "（左）" : "（右）" }}
                 </div>
               </div>
 
