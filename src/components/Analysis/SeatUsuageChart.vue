@@ -11,10 +11,12 @@
 
 <script>
 import VueApexChart from "vue-apexcharts";
+import { rtdb } from "@/plugins/db";
 
 export default {
   data() {
     return {
+      dataInfo: {},
       series: [
         {
           data: []
@@ -72,22 +74,40 @@ export default {
     };
   },
   created() {
-    for (let count = 0; count < 5; count++) {
-      this.updateChart(count);
+    while (this.dataInfo == {}) {
+      console.log("loading");
+    }
+    this.updateInfo();
+    console.log("yes created");
+  },
+  watch: {
+    dataInfo() {
+      this.updateInfo();
+      console.log("yes watched");
     }
   },
   methods: {
-    updateChart(count) {
+    updateInfo() {
       let series = this.series;
-      series[0].data.push([
-        new Date().getTime() + 10000000 * count,
-        Math.round(Math.random() * (100 - 0))
-      ]);
+
+      let keys = Object.keys(this.dataInfo);
+      keys.forEach(key => {
+        series[0].data.push([
+          new Date(
+            this.dataInfo[key]["日期"] + " " + this.dataInfo[key]["時間"]
+          ),
+          this.dataInfo[key]["座位狀況"] == "空位" ? ["0"] : ["100"]
+        ]);
+      });
+
       this.series = series;
     }
   },
   components: {
     VueApexChart
+  },
+  firebase: {
+    dataInfo: rtdb.ref("/seat-info")
   }
 };
 </script>

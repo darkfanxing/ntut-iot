@@ -37,7 +37,9 @@
                   v-for="index in 2"
                   :key="`type-tow-${index}`"
                   :class="[
-                    seatsInfo[seat.id]['is-empty'][index - 1]
+                    seatsSituation[Object.keys(seatsSituation)[0]][
+                      '座位狀況'
+                    ] == '空位'
                       ? 'is-empty'
                       : 'is-not-empty',
                     index == 1 ? 'round-top' : 'round-bottom',
@@ -51,7 +53,8 @@
               <div
                 v-else
                 :class="[
-                  seatsInfo[seat.id]['is-empty'][0]
+                  seatsSituation[Object.keys(seatsSituation)[0]]['座位狀況'] ==
+                  '空位'
                     ? 'is-empty'
                     : 'is-not-empty',
                   'd-flex justify-center align-center type-one round',
@@ -93,13 +96,9 @@ export default {
       dragElement: null,
       dropElement: null,
       seatsInfo: {},
-      seatsLocation: []
+      seatsLocation: [],
+      seatsSituation: {}
     };
-  },
-  watch: {
-    // seatsLocation () {
-    //   rtdb.ref("/seats").set(this.seatsLocation);
-    // }
   },
   mounted() {
     EventBus.$on("closeEditSeatInfoDialog", () => {
@@ -155,7 +154,8 @@ export default {
     seatsInfo: frdb.collection("seat-situation").doc("seat-info")
   },
   firebase: {
-    seatsLocation: rtdb.ref("/seats")
+    seatsLocation: rtdb.ref("/seats"),
+    seatsSituation: rtdb.ref("/seat-info").limitToLast(1)
   }
 };
 </script>

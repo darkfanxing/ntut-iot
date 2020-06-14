@@ -14,9 +14,12 @@
 import VueApexChart from "vue-apexcharts";
 
 export default {
+  props: {
+    series: Array,
+    label: String
+  },
   data() {
     return {
-      series: [80],
       chartOptions: {
         chart: {
           height: 350,
@@ -59,14 +62,9 @@ export default {
         stroke: {
           dashArray: 4
         },
-        labels: ["濕度"]
+        labels: [this.label]
       }
     };
-  },
-  created() {
-    setInterval(() => {
-      this.series = [Math.round(Math.random() * (90 - 80) + 80)];
-    }, 1000);
   },
   components: {
     VueApexChart
