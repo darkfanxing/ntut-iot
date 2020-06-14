@@ -5,6 +5,7 @@
       height="350"
       :options="chartOptions"
       :series="series"
+      :key="test"
     ></VueApexChart>
   </div>
 </template>
@@ -17,6 +18,7 @@ export default {
   data() {
     return {
       dataInfo: {},
+      test: 0,
       series: [
         {
           data: []
@@ -73,17 +75,9 @@ export default {
       }
     };
   },
-  created() {
-    while (this.dataInfo == {}) {
-      console.log("loading");
-    }
-    this.updateInfo();
-    console.log("yes created");
-  },
   watch: {
     dataInfo() {
       this.updateInfo();
-      console.log("yes watched");
     }
   },
   methods: {
@@ -101,6 +95,7 @@ export default {
       });
 
       this.series = series;
+      this.test += 1;
     }
   },
   components: {
